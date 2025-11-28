@@ -1,0 +1,80 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual environments
+venv/
+ENV/
+env/
+.venv
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Generated data
+data/processed/
+database.db
+
+# Exclude generated txt/json but keep documentation
+*.txt
+*.json
+!pyproject.toml
+!requirements.txt
+!*.md
+
+# Data directory (keep structure but ignore large files)
+data/external/bg/*.png
+data/external/bg/*.jpg
+data/external/bg/*.jpeg
+data/external/fonts/*.ttf
+data/external/fonts/*.otf
+data/external/labels/*.txt
+data/external/labels/*.csv
+data/external/labels/*.tsv
+
+# Logs
+*.log
+logs/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp
+temp/
+
+# Jupyter
+.ipynb_checkpoints/
+*.ipynb
+
+# Model files
+*.pt
+*.pth
+*.bin
+models/
+checkpoints/
+
