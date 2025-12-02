@@ -44,7 +44,7 @@ print("Timings:", doc.timings)
 # latex = ocr.recognize_latex("path/to/formula.png")
 
 # 4) Visualize bounding boxes 
-annotated = draw_document_boxes(image_path, doc, show_layout=True, show_detections=True)
+annotated = draw_document_boxes(image_path, doc, show_layout=False, show_detections=True)
 display(annotated)  # in notebooks; annotated.save("annotated.jpg") to persist
 
 # 5) Export to Markdown
