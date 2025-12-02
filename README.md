@@ -56,18 +56,15 @@ print("Markdown preview:\n", md[:500])
 
 ## Example output
 
-<table>
-  <tr>
-    <td align="center"><strong>Sample</strong></td>
-    <td align="center"><strong>Input</strong></td>
-    <td align="center"><strong>Annotated</strong></td>
-    <td align="center"><strong>OCR Text</strong></td>
-  </tr>
-  <tr>
-    <td align="center"><strong>1</strong></td>
-    <td align="center"><img src="samples/sample_1.png" alt="Sample 1 Input" width="40%" /></td>
-    <td align="center"><img src="samples/sample_1_annotated.png" alt="Sample 1 Annotated" width="40%" /></td>
-    <td><pre>គណនេយ្យ តាមការណែនាំរបស់អ្នកផ្ទះ ដែលតាមពិតគាត់មាន
+## Example output
+
+**Sample 1**
+<p align="center">
+  <img src="samples/sample_1.png" alt="Sample 1 Input" width="48%" />
+  <img src="samples/sample_1_annotated.png" alt="Sample 1 Annotated" width="48%" />
+</p>
+<pre>
+គណនេយ្យ តាមការណែនាំរបស់អ្នកផ្ទះ ដែលតាមពិតគាត់មាន
 សមត្ថភាពក្នុងផ្នែកអាយធីច្រើនជាង។ ក្រោយមក គាត់ក៏ប្តូរមក
 ផ្នែកអាយធីវិញ ព្រោះទៅមិនរួចក្នុងគណនេយ្យ។ គាត់ត្រូវខាត
 ពេលរៀនមុខវិជ្ជាសងសាលាវិញ ហើយថែមទាំងត្រូវរៀនមូលដ្ឋាន
@@ -84,13 +81,16 @@ print("Markdown preview:\n", md[:500])
 យកជំនាញពីដំបូង ហេតុនេះធ្វើឱ្យយឹតពេលនៅពេលចេញធ្វើការ។
 ពេលធ្វើការ ក្រៅពីត្រូវរវល់នឹងការងារហើយ ខ្ញុំត្រូវពង្រឹងជំនាញ
 របស់ខ្ញុំក្នុងពេលតែមួយទៀតផង។ បើចង់ចំណេញពេល និងមិន
-ពិបាកខ្លួន គួរតែអភិវឌ្ឍជំនាញតាំងពីដើមឱ្យហើយ។</pre></td>
-  </tr>
-  <tr>
-    <td align="center"><strong>2</strong></td>
-    <td align="center"><img src="samples/sample_2.png" alt="Sample 2 Input" width="40%" /></td>
-    <td align="center"><img src="samples/sample_2_annotated.png" alt="Sample 2 Annotated" width="40%" /></td>
-    <td><pre>ផ្នោតលើជំនាញ
+ពិបាកខ្លួន គួរតែអភិវឌ្ឍជំនាញតាំងពីដើមឱ្យហើយ។
+</pre>
+
+**Sample 2**
+<p align="center">
+  <img src="samples/sample_2.png" alt="Sample 2 Input" width="48%" />
+  <img src="samples/sample_2_annotated.png" alt="Sample 2 Annotated" width="48%" />
+</p>
+<pre>
+ផ្នោតលើជំនាញ
 យើងនឹងលឺគ្រូគ្រប់មុខវិជ្ជា ចូលមកពន្យល់យើងថា មុខវិជ្ជាដែល
 គាត់បង្រៀនសំខាន់ប៉ុណ្ណោះ។ គ្រូណាក៏និយាយបែបនោះដែរ ព្រោះ
 បើវាមិនសំខាន់ សាលាក៏មិនជូលគាត់មកបង្រៀនដែរ។ ប៉ុន្តែ យើង
@@ -104,28 +104,32 @@ print("Markdown preview:\n", md[:500])
 តាំងពីបើកឆាកទៅឱ្យហើយ បើមិនអញ្ចឹងទេ ប្រាកដជាយឺតពេល។
 កាលដែលខ្ញុំរៀនឆ្នាំទីមួយ ខ្ញុំមិនបានដឹងរឿងនេះទេ។ ខ្ញុំរវល់តែ
 ខ្វល់ជាមួយនឹងមុខវិជ្ជាដែលគ្រូប្រាប់ថាសំខាន់ ហើយភ្លេចថាខ្លួនឯង
-ក៏មានមុខវិជ្ជាសំខាន់ដែរ។ មានពេលខ្លះ ខ្ញុំចំណាយពេលពីរសប្តាហ៍</pre></td>
-  </tr>
-  <tr>
-    <td align="center"><strong>3</strong></td>
-    <td align="center"><img src="samples/sample_3.png" alt="Sample 3 Input" width="40%" /></td>
-    <td align="center"><img src="samples/sample_3_annotated.png" alt="Sample 3 Annotated" width="40%" /></td>
-    <td><pre>ទំនាក់ទំនងផ្សាយពាណិជ្ជកម្ម</pre></td>
-  </tr>
-  <tr>
-    <td align="center"><strong>4</strong></td>
-    <td align="center"><img src="samples/sample_4.png" alt="Sample 4 Input" width="45%" /></td>
-    <td align="center"><img src="samples/sample_4_annotated.png" alt="Sample 4 Annotated" width="45%" /></td>
-    <td><pre>លោក ស សុខា បានបញ្ជាក់ថា ដើម្បីដោះស្រាយបញ្ហានេះ គឺផ្តើមចេញពីក្រសួងមហាផ្ទៃផ្ទាល់តែម្តង។ លោកចានណែនាំអង្គ
+ក៏មានមុខវិជ្ជាសំខាន់ដែរ។ មានពេលខ្លះ ខ្ញុំចំណាយពេលពីរសប្តាហ៍
+</pre>
+
+**Sample 3**
+<p align="center">
+  <img src="samples/sample_3.png" alt="Sample 3 Input" width="48%" />
+  <img src="samples/sample_3_annotated.png" alt="Sample 3 Annotated" width="48%" />
+</p>
+<pre>ទំនាក់ទំនងផ្សាយពាណិជ្ជកម្ម</pre>
+
+**Sample 4**
+<p align="center">
+  <img src="samples/sample_4.png" alt="Sample 4 Input" width="48%" />
+  <img src="samples/sample_4_annotated.png" alt="Sample 4 Annotated" width="48%" />
+</p>
+<pre>
+លោក ស សុខា បានបញ្ជាក់ថា ដើម្បីដោះស្រាយបញ្ហានេះ គឺផ្តើមចេញពីក្រសួងមហាផ្ទៃផ្ទាល់តែម្តង។ លោកចានណែនាំអង្គ
 ភាពជំនាញ ឱ្យរៀបចំយន្តការក្រុមការងារសហការស្រាវជ្រាវបង្ក្រាបបទល្មើសចោកប្រាស់ដូចបានបញ្ជាក់ខាងលើនេះ។
 តាមរយៈយន្តការនេះ លោកបានអះអាងថា មុន្ត្រីជំនាញប្រចាំការ នឹងធ្វើការងារនេះ២៤ម៉ោង ជារៀងរាល់ថ្ងៃ ដើម្បីសហការ
 ជាមួយតំណាងធនាគារនិងគ្រឹះស្ថានមីក្រូហិរញ្ញវត្ថុ ក្នុងករណីទទួលបានបណ្តឹងពីជនរងគ្រោះ ក្នុងនោះក៏រួមទាំងសហការ
-ស្មើសុំបង្កកប្រាក់ក្មុងគណនីជនល្មើសជាដើម។</pre></td>
-  </tr>
-  <tr>
-    <td align="center"><strong>5</strong></td>
-    <td align="center"><img src="samples/sample_5.png" alt="Sample 5 Input" width="49%" /></td>
-    <td align="center"><img src="samples/sample_5_annotated.png" alt="Sample 5 Annotated" width="49%" /></td>
-    <td><pre>បើតាមលោករដ្ឋមន្ត្រីមហាផ្ទៃ រូបភាពនៃការបន្លំបោកប្រាស់ទាំងនោះ មានដូចជា ការបន្លំខ្លួនធ្វើជាមន្រ្តីនេះគាតារា</pre></td>
-  </tr>
-</table>
+ស្មើសុំបង្កកប្រាក់ក្មុងគណនីជនល្មើសជាដើម។
+</pre>
+
+**Sample 5**
+<p align="center">
+  <img src="samples/sample_5.png" alt="Sample 5 Input" width="48%" />
+  <img src="samples/sample_5_annotated.png" alt="Sample 5 Annotated" width="48%" />
+</p>
+<pre>បើតាមលោករដ្ឋមន្ត្រីមហាផ្ទៃ រូបភាពនៃការបន្លំបោកប្រាស់ទាំងនោះ មានដូចជា ការបន្លំខ្លួនធ្វើជាមន្រ្តីនេះគាតារា</pre>
