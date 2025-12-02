@@ -1,6 +1,6 @@
 [project]
 name = "mer"
-version = "1.0.1"
+version = "1.1.0"
 description = "Mer (មើល): Khmer/English OCR with CNN-Transformer + Surya layout/latex/tables"
 readme = "README.md"
 requires-python = ">=3.10"
