@@ -6,24 +6,19 @@ def read(*paths):
         return f.read()
     
 requirements = [
-    'datasets',
-    'transformers',
-    'torchaudio',
-    'soundfile',
-    'torch',
-    'numpy',
+    'surya-ocr'
 ]
 
 setup(
-    name='sdab',
-    version='1.0.1',
-    packages=['sdab'],
-    url='https://github.com/MetythornPenn/sdab.git',
+    name='merl',
+    version='0.0.1',
+    packages=['merl'],
+    url='https://github.com/MetythornPenn/merl.git',
     license='Apache Software License 2.0',
     author = 'Metythorn Penn',
     author_email = 'metythorn@gmail.com',
-    keywords='asr',
-    description='Khmer Speech To Text Inference API using Wav2Vec2 with Pretrain Model',
+    keywords='ocr',
+    description='Khmer OCR inference',
     install_requires=requirements,
     long_description=(read('README.md')),
     long_description_content_type='text/markdown',
