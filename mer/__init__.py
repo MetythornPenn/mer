@@ -1,4 +1,4 @@
-from .merl import Merl, ensure_artifacts, ArtifactPaths
+from .mer import Mer, ensure_artifacts, ArtifactPaths
 from .types import (
     DocumentResult,
     LineResult,
@@ -12,7 +12,7 @@ from .markdown import document_to_markdown
 from .postprocess import postprocess_text
 
 __all__ = [
-    "Merl",
+    "Mer",
     "ArtifactPaths",
     "ensure_artifacts",
     "DocumentResult",

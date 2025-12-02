@@ -10,10 +10,10 @@ requirements = [
 ]
 
 setup(
-    name='merl',
+    name='mer',
     version='0.0.1',
-    packages=['merl'],
-    url='https://github.com/MetythornPenn/merl.git',
+    packages=['mer'],
+    url='https://github.com/MetythornPenn/mer.git',
     license='Apache Software License 2.0',
     author = 'Metythorn Penn',
     author_email = 'metythorn@gmail.com',

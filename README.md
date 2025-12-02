@@ -1,24 +1,24 @@
-# Merl (មើល)
+# Mer (មើល)
 
-Merl (មើល) is a lightweight bilingual (Khmer/English) OCR that pairs my own recognizer with Surya OCR for layout detection, tables, latex ocr, and reading order.
+Mer (មើល) is a lightweight bilingual (Khmer/English) OCR that pairs my own recognizer with Surya OCR for layout detection, tables, latex ocr, and reading order.
 Why not use Surya alone? Its built-in recognizer still struggles with the wide variety of Khmer fonts, so I wasn’t satisfied with the accuracy. I don’t have a public paper for this achitecture — everything comes from thousands of experiments across different model architectures and datasets.
 
 
 ## Installation
 ```bash
 # install from PyPI
-pip install merl
+pip install mer
 
 # install from source
-git clone https://github.com/MetythornPenn/merl.git && cd merl
+git clone https://github.com/MetythornPenn/mer.git && cd mer
 pip install -e .
 ```
 
 ## Getting started
 ```python
 from IPython.display import display
-from merl import (
-    Merl,
+from mer import (
+    Mer,
     draw_document_boxes,
     gather_bboxes,
     document_to_markdown,
@@ -26,7 +26,7 @@ from merl import (
 
 image_path = "samples/sample_1.png"
 
-ocr = Merl()
+ocr = Mer()
 ocr.load()     
 
 # 1) Line-level OCR
@@ -50,6 +50,10 @@ display(annotated)  # in notebooks; annotated.save("annotated.jpg") to persist
 # 5) Export to Markdown
 md = document_to_markdown(doc)
 print("Markdown preview:\n", md[:500])
+
+# 6) Optional text post-processing (already applied to recognizer output)
+from mer import postprocess_text
+print(postprocess_text("ទៀតផង ។"))  # -> "ទៀតផង។"
 
 ```
 

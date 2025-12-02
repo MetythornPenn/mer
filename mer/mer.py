@@ -21,7 +21,7 @@ from .types import (
 )
 
 
-class Merl:
+class Mer:
     """
     Public-facing helper that wraps the line recognizer and Surya document pipeline.
     """
@@ -78,7 +78,7 @@ class Merl:
 
 
 __all__ = [
-    "Merl",
+    "Mer",
     "ArtifactPaths",
     "ensure_artifacts",
     "DocumentResult",

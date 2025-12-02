@@ -4,12 +4,12 @@ from types import SimpleNamespace
 
 import pytest
 
-from merl import Merl, postprocess_text
-from merl.artifacts import ensure_artifacts
-from merl.constants import MODEL_FILENAME, CONFIG_FILENAME
-from merl import artifacts as artifacts_module
-from merl import predictor as predictor_module
-from merl.surya import SuryaDocumentProcessor
+from mer import Mer, postprocess_text
+from mer.artifacts import ensure_artifacts
+from mer.constants import MODEL_FILENAME, CONFIG_FILENAME
+from mer import artifacts as artifacts_module
+from mer import predictor as predictor_module
+from mer.surya import SuryaDocumentProcessor
 
 
 def _write_dummy_config(path: Path) -> None:
@@ -69,7 +69,7 @@ def test_ensure_artifacts_downloads_when_missing(tmp_path, monkeypatch):
     assert artifacts.config.exists()
 
 
-def test_merl_recognize_line_uses_predictor(tmp_path, monkeypatch):
+def test_mer_recognize_line_uses_predictor(tmp_path, monkeypatch):
     weights = tmp_path / MODEL_FILENAME
     cfg = tmp_path / CONFIG_FILENAME
     weights.write_text("weights", encoding="utf-8")
@@ -79,7 +79,7 @@ def test_merl_recognize_line_uses_predictor(tmp_path, monkeypatch):
     monkeypatch.setattr(predictor_module.Predictor, "predict", lambda self, image: "dummy-text")
 
     sample_img = Path(__file__).resolve().parent.parent / "samples" / "image.png"
-    ocr = Merl(cache_dir=tmp_path)
+    ocr = Mer(cache_dir=tmp_path)
     assert ocr.recognize_line(sample_img) == "dummy-text"
 
 

@@ -1,7 +1,7 @@
 """
 Compatibility shim to preserve older imports.
 """
-from .merl import Merl, ensure_artifacts, ArtifactPaths
+from .mer import Mer, ensure_artifacts, ArtifactPaths
 from .types import (
     DocumentResult,
     LineResult,
@@ -17,7 +17,7 @@ from .vocab import Vocabulary
 from .transformer import KhmerOCRTransformer, PositionalEncoding
 
 __all__ = [
-    "Merl",
+    "Mer",
     "ensure_artifacts",
     "ArtifactPaths",
     "DocumentResult",

@@ -1,7 +1,7 @@
 [project]
-name = "merl"
+name = "mer"
 version = "1.0.1"
-description = "Merl (មើល): Khmer/English OCR with CNN-Transformer + Surya layout/latex/tables"
+description = "Mer (មើល): Khmer/English OCR with CNN-Transformer + Surya layout/latex/tables"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
