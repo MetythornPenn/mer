@@ -1,6 +1,6 @@
 [project]
 name = "mer"
-version = "1.1.0"
+version = "1.1.1"
 description = "Mer (មើល): Khmer/English OCR with CNN-Transformer + Surya layout/latex/tables"
 readme = "README.md"
 requires-python = ">=3.10"
@@ -12,17 +12,22 @@ dependencies = [
     "torch>=2.8.0",
     "torchvision>=0.19.0",
     "transformers>=4.56.0",
-]
-
-[dependency-groups]
-dev = [
-    "pytest>=7.4.0",
+    "tqdm>=4.66.0",
 ]
 
 [tool.uv]
 dev-dependencies = [
     "editdistance>=0.8.1",
+    "pytest>=7.4.0",
 ]
+
+[tool.setuptools.packages.find]
+include = ["mer"]
+exclude = ["tests*", "samples*"]
+
+[build-system]
+requires = ["setuptools>=64", "wheel"]
+build-backend = "setuptools.build_meta"
 
 [[tool.uv.index]]
 name = "pytorch-cu128"

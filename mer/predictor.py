@@ -19,6 +19,8 @@ def _coerce_device(device: Optional[Union[str, torch.device]]) -> torch.device:
         return torch.device("cuda" if torch.cuda.is_available() else "cpu")
     if isinstance(device, torch.device):
         return device
+    if isinstance(device, str) and device.startswith("cuda") and not torch.cuda.is_available():
+        return torch.device("cpu")
     return torch.device(device)
 
 

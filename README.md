@@ -33,12 +33,12 @@ ocr.load()
 # text = ocr.recognize_line(image_path)
 # print("Line text:", text)
 
-# 2) Document-level OCR (Recommend)
-doc = ocr.analyze_document(image_path)
-print("Device:", doc.device)
-print("Reading order:", doc.reading_order)
-print("Lines:", [line.text for line in doc.lines])
-print("Timings:", doc.timings)
+# 2) Document-level OCR (Recommend) - returns JSON by default
+doc = ocr.predict(image_path)
+print("Device:", doc["device"])
+print("Reading order:", doc["reading_order"])
+print("Lines:", [line["text"] for line in doc["lines"]])
+print("Timings:", doc["timings"])
 
 # 3) LaTeX recognition 
 # latex = ocr.recognize_latex("path/to/formula.png")
@@ -55,6 +55,44 @@ print("Markdown preview:\n", md[:500])
 from mer import postprocess_text
 print(postprocess_text("ទៀតផង ។"))  # -> "ទៀតផង។"
 
+```
+
+### Configuration options
+- `device`: set to `"cpu"`, `"cuda"`, or a specific device string; default `"cuda"` with automatic CPU fallback if CUDA is unavailable.
+- `model_path`: point to a directory containing the model weights/config to skip downloading from Hugging Face.
+- `markdown`: if `True`, `predict` returns a Markdown string instead of a structured result.
+- `postprocess`: if `False`, disables text post-processing (spacing, Khmer punctuation fixes) on recognizer output.
+- `json_result`: default `True`; `predict` returns a JSON-serializable dict (device, timings, reading order, lines, tables, layout blocks, detections). Set to `False` to get a structured `DocumentResult`.
+
+### Using local model files
+If you already have the model weights and config on disk, point Mer at the folder to skip Hugging Face downloads:
+
+```python
+from mer import Mer
+
+ocr = Mer(model_path="/path/to/local/model_dir", device="cpu")
+ocr.load()
+```
+
+Place `khmer_ocr_latest.pth` and `config.json` (or your custom filenames) in that directory; downloads are only attempted when files are missing.
+
+### Return Markdown directly
+```python
+ocr = Mer(markdown=True)  # predict will return markdown text
+md = ocr.predict("samples/sample_1.png")
+print(md[:500])
+```
+
+### Return JSON directly
+```python
+ocr = Mer(json_result=True)  # default behavior
+result = ocr.predict("samples/sample_1.png")
+print(result["device"], result["timings"].get("total"))
+print(result["lines"][0]["text"])
+
+# For a structured DocumentResult instead:
+# ocr = Mer(json_result=False)
+# doc = ocr.predict("samples/sample_1.png")
 ```
 
 

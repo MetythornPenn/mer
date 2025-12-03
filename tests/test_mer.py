@@ -3,12 +3,15 @@ from pathlib import Path
 from types import SimpleNamespace
 
 import pytest
+from PIL import Image
 
 from mer import Mer, postprocess_text
 from mer.artifacts import ensure_artifacts
 from mer.constants import MODEL_FILENAME, CONFIG_FILENAME
 from mer import artifacts as artifacts_module
 from mer import predictor as predictor_module
+import mer.mer as mer_module
+from mer.types import LineResult, DocumentResult
 from mer.surya import SuryaDocumentProcessor
 
 
@@ -69,6 +72,32 @@ def test_ensure_artifacts_downloads_when_missing(tmp_path, monkeypatch):
     assert artifacts.config.exists()
 
 
+def test_ensure_artifacts_uses_local_dir(tmp_path, monkeypatch):
+    local_dir = tmp_path / "local"
+    local_dir.mkdir()
+    weights = local_dir / MODEL_FILENAME
+    cfg = local_dir / CONFIG_FILENAME
+    weights.write_text("weights", encoding="utf-8")
+    _write_dummy_config(cfg)
+
+    def fake_download(*args, **kwargs):
+        raise AssertionError("Download should not be called when local_dir is provided")
+
+    monkeypatch.setattr(artifacts_module, "hf_hub_download", fake_download)
+
+    artifacts = ensure_artifacts(cache_dir=tmp_path, local_dir=local_dir)
+    assert artifacts.base_dir == local_dir
+    assert artifacts.weights == weights
+    assert artifacts.config == cfg
+
+
+def test_ensure_artifacts_raises_when_local_missing(tmp_path):
+    local_dir = tmp_path / "local"
+    local_dir.mkdir()
+    with pytest.raises(FileNotFoundError):
+        ensure_artifacts(local_dir=local_dir)
+
+
 def test_mer_recognize_line_uses_predictor(tmp_path, monkeypatch):
     weights = tmp_path / MODEL_FILENAME
     cfg = tmp_path / CONFIG_FILENAME
@@ -78,9 +107,28 @@ def test_mer_recognize_line_uses_predictor(tmp_path, monkeypatch):
     monkeypatch.setattr(predictor_module.Predictor, "_load_model", lambda self: object())
     monkeypatch.setattr(predictor_module.Predictor, "predict", lambda self, image: "dummy-text")
 
-    sample_img = Path(__file__).resolve().parent.parent / "samples" / "image.png"
-    ocr = Mer(cache_dir=tmp_path)
+    sample_img = tmp_path / "line.png"
+    Image.new("RGB", (10, 10), color="white").save(sample_img)
+
+    ocr = Mer(cache_dir=tmp_path, model_path=tmp_path)
     assert ocr.recognize_line(sample_img) == "dummy-text"
+
+
+def test_mer_postprocess_flag(tmp_path, monkeypatch):
+    weights = tmp_path / MODEL_FILENAME
+    cfg = tmp_path / CONFIG_FILENAME
+    weights.write_text("weights", encoding="utf-8")
+    _write_dummy_config(cfg)
+
+    raw_text = "raw\ttext"
+    monkeypatch.setattr(predictor_module.Predictor, "_load_model", lambda self: object())
+    monkeypatch.setattr(predictor_module.Predictor, "predict", lambda self, image: raw_text)
+
+    sample_img = tmp_path / "line.png"
+    Image.new("RGB", (10, 10), color="white").save(sample_img)
+
+    ocr = Mer(cache_dir=tmp_path, model_path=tmp_path, postprocess=False)
+    assert ocr.recognize_line(sample_img) == raw_text
 
 
 def test_surya_document_processor_flow(tmp_path, monkeypatch):
@@ -152,7 +200,9 @@ def test_surya_document_processor_flow(tmp_path, monkeypatch):
 
     processor.load()
 
-    sample_img = Path(__file__).resolve().parent.parent / "samples" / "image.png"
+    sample_img = tmp_path / "doc.png"
+    Image.new("RGB", (10, 10), color="white").save(sample_img)
+
     doc = processor.process_image(sample_img)
     assert doc.lines and doc.lines[0].text == "line-text"
     assert doc.reading_order == [0]
@@ -168,3 +218,77 @@ def test_postprocess_text():
     assert postprocess_text("   spaced\n\tIndented") == "spaced\nIndented"
     assert postprocess_text("a   b  c") == "a b c"
     assert postprocess_text("") == ""
+
+
+def test_analyze_document_markdown_flag(tmp_path, monkeypatch):
+    weights = tmp_path / MODEL_FILENAME
+    cfg = tmp_path / CONFIG_FILENAME
+    weights.write_text("weights", encoding="utf-8")
+    _write_dummy_config(cfg)
+
+    monkeypatch.setattr(predictor_module.Predictor, "_load_model", lambda self: object())
+
+    ocr = Mer(cache_dir=tmp_path, model_path=tmp_path, markdown=True)
+    monkeypatch.setattr(ocr._document_processor, "load", lambda: None)
+    monkeypatch.setattr(ocr._document_processor, "process_image", lambda image: "DOC")
+    monkeypatch.setattr(mer_module, "document_to_markdown", lambda doc: f"md:{doc}")
+
+    assert ocr.predict("dummy.png") == "md:DOC"
+
+
+def test_analyze_document_json_flag(tmp_path, monkeypatch):
+    weights = tmp_path / MODEL_FILENAME
+    cfg = tmp_path / CONFIG_FILENAME
+    weights.write_text("weights", encoding="utf-8")
+    _write_dummy_config(cfg)
+
+    monkeypatch.setattr(predictor_module.Predictor, "_load_model", lambda self: object())
+
+    ocr = Mer(cache_dir=tmp_path, model_path=tmp_path, json_result=True)
+    monkeypatch.setattr(ocr._document_processor, "load", lambda: None)
+
+    line = LineResult(order=0, block_index=0, block_label="Text", text="hi", polygon=[[0, 0], [1, 0], [1, 1], [0, 1]], bbox=[0, 0, 1, 1])
+    doc = DocumentResult(
+        lines=[line],
+        tables=[],
+        layout_blocks=[],
+        detections=[],
+        reading_order=[0],
+        device="cpu",
+        timings={"total": 0.5},
+    )
+    monkeypatch.setattr(ocr._document_processor, "process_image", lambda image: doc)
+
+    result = ocr.predict("dummy.png")
+    assert result["device"] == "cpu"
+    assert result["timings"]["total"] == 0.5
+    assert result["lines"][0]["text"] == "hi"
+
+
+def test_predict_returns_json_by_default(tmp_path, monkeypatch):
+    weights = tmp_path / MODEL_FILENAME
+    cfg = tmp_path / CONFIG_FILENAME
+    weights.write_text("weights", encoding="utf-8")
+    _write_dummy_config(cfg)
+
+    monkeypatch.setattr(predictor_module.Predictor, "_load_model", lambda self: object())
+
+    ocr = Mer(cache_dir=tmp_path, model_path=tmp_path)
+    monkeypatch.setattr(ocr._document_processor, "load", lambda: None)
+
+    line = LineResult(order=0, block_index=0, block_label="Text", text="hello", polygon=[[0, 0]], bbox=[0, 0, 1, 1])
+    doc = DocumentResult(
+        lines=[line],
+        tables=[],
+        layout_blocks=[],
+        detections=[],
+        reading_order=[0],
+        device="cpu",
+        timings=None,
+    )
+    monkeypatch.setattr(ocr._document_processor, "process_image", lambda image: doc)
+
+    result = ocr.predict("dummy.png")
+    assert isinstance(result, dict)
+    assert result["device"] == "cpu"
+    assert result["lines"][0]["text"] == "hello"
