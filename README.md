@@ -6,12 +6,7 @@ Why not use Surya alone? Its built-in recognizer still struggles with the wide v
 
 ## Installation
 ```bash
-# install from PyPI
 pip install mer
-
-# install from source
-git clone https://github.com/MetythornPenn/mer.git && cd mer
-pip install -e .
 ```
 
 ## Getting started
@@ -30,10 +25,10 @@ ocr = Mer()
 ocr.load()     
 
 # 1) Line-level OCR
-# text = ocr.recognize_line(image_path)
-# print("Line text:", text)
+text = ocr.recognize_line(image_path)
+print("Line text:", text)
 
-# 2) Document-level OCR (Recommend) - returns JSON by default
+# 2) Document-level OCR (Recommend)
 doc = ocr.predict(image_path)
 print("Device:", doc["device"])
 print("Reading order:", doc["reading_order"])
@@ -41,17 +36,18 @@ print("Lines:", [line["text"] for line in doc["lines"]])
 print("Timings:", doc["timings"])
 
 # 3) LaTeX recognition 
-# latex = ocr.recognize_latex("path/to/formula.png")
+latex = ocr.recognize_latex("path/to/formula.png")
 
 # 4) Visualize bounding boxes 
 annotated = draw_document_boxes(image_path, doc, show_layout=False, show_detections=True)
-display(annotated)  # in notebooks; annotated.save("annotated.jpg") to persist
+display(annotated)  # in notebooks; 
+annotated.save("annotated.jpg") to persist
 
 # 5) Export to Markdown
 md = document_to_markdown(doc)
 print("Markdown preview:\n", md[:500])
 
-# 6) Optional text post-processing (already applied to recognizer output)
+# 6) Optional text post-processing
 from mer import postprocess_text
 print(postprocess_text("ទៀតផង ។"))  # -> "ទៀតផង។"
 
