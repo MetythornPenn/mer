@@ -1,16 +1,19 @@
 from __future__ import annotations
 
-from typing import Iterable
+from typing import Iterable, Mapping, Any
 
 from .types import DocumentResult, LineResult, TableBlockResult
+from .document_utils import coerce_document_result
 
 
-def document_to_markdown(doc: DocumentResult) -> str:
+def document_to_markdown(doc: DocumentResult | Mapping[str, Any]) -> str:
     """
     Render DocumentResult into a simple markdown string.
     - Lines are ordered by reading_order.
     - Tables are rendered as markdown tables per block; if no cells present, table bbox is noted.
+    Accepts either a DocumentResult or the JSON dict produced by predict(json_result=True).
     """
+    doc = coerce_document_result(doc)
     sections: list[str] = []
 
     # Lines

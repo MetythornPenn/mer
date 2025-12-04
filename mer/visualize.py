@@ -1,18 +1,19 @@
 from __future__ import annotations
 
-from typing import Tuple, Union
+from typing import Tuple, Union, Mapping, Any
 import os
 from PIL import Image, ImageDraw
 
 from .types import DocumentResult
 from .surya import SuryaDocumentProcessor
+from .document_utils import coerce_document_result
 
 PathLike = Union[str, "os.PathLike[str]"]  # noqa: F821
 
 
 def draw_document_boxes(
     image: Union[bytes, Image.Image, PathLike],
-    doc: DocumentResult,
+    doc: DocumentResult | Mapping[str, Any],
     show_lines: bool = True,
     show_layout: bool = False,
     show_tables: bool = True,
@@ -26,6 +27,7 @@ def draw_document_boxes(
     """
     Draw bounding boxes from DocumentResult onto an image and return a new PIL.Image.
     """
+    doc = coerce_document_result(doc)
     pil_image = SuryaDocumentProcessor._coerce_image(image)  # reuse shared helper
     if pil_image.mode != "RGBA":
         pil_image = pil_image.convert("RGBA")
@@ -54,11 +56,12 @@ def draw_document_boxes(
     return composed.convert("RGB")
 
 
-def gather_bboxes(doc: DocumentResult) -> dict[str, list[list[float]]]:
+def gather_bboxes(doc: DocumentResult | Mapping[str, Any]) -> dict[str, list[list[float]]]:
     """
     Return a plain dict of bounding boxes so callers can plot/overlay however they like.
     Keys: lines, tables, table_cells, layout, layout_polygons, detections.
     """
+    doc = coerce_document_result(doc)
     return {
         "lines": [line.bbox for line in doc.lines],
         "tables": [table.bbox for table in doc.tables],

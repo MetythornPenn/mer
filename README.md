@@ -24,7 +24,7 @@ image_path = "samples/sample_1.png"
 ocr = Mer()
 ocr.load()     
 
-# 1) Line-level OCR
+# 1) Line-level OCR (json_result=True returns {"text": ...})
 text = ocr.recognize_line(image_path)
 print("Line text:", text)
 
@@ -36,6 +36,7 @@ print("Lines:", [line["text"] for line in doc["lines"]])
 print("Timings:", doc["timings"])
 
 # 3) LaTeX recognition 
+#    Pass json_result=True to get a simple dict: {"latex": "..."}
 latex = ocr.recognize_latex("path/to/formula.png")
 
 # 4) Visualize bounding boxes 
@@ -43,7 +44,7 @@ annotated = draw_document_boxes(image_path, doc, show_layout=False, show_detecti
 display(annotated)  # in notebooks; 
 annotated.save("annotated.jpg") to persist
 
-# 5) Export to Markdown
+# 5) Export to Markdown (accepts JSON from predict or DocumentResult)
 md = document_to_markdown(doc)
 print("Markdown preview:\n", md[:500])
 

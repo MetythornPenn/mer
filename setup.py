@@ -16,7 +16,7 @@ requirements = [
 
 setup(
     name='mer',
-    version='1.1.2',
+    version='1.1.3',
     packages=['mer'],
     url='https://github.com/MetythornPenn/mer.git',
     license='Apache Software License 2.0',

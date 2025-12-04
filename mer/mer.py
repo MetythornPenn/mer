@@ -8,6 +8,7 @@ from PIL import Image
 
 from .artifacts import ArtifactPaths, ensure_artifacts
 from .constants import DEFAULT_CACHE_DIR, REPO_ID
+from .document_utils import document_result_to_json
 from .markdown import document_to_markdown
 from .predictor import Predictor, PathLike
 from .surya import SuryaDocumentProcessor
@@ -66,64 +67,16 @@ class Mer:
             return str(raw)
         return postprocess_text(raw) if self._apply_postprocess else raw
 
-    def recognize_line(self, image: Union[bytes, Image.Image, PathLike]) -> str:
+    def recognize_line(self, image: Union[bytes, Image.Image, PathLike], json_result: bool = False) -> Union[str, Dict[str, str]]:
         """Run the custom CNN-Transformer line recognizer directly."""
         pil_image = self._document_processor._coerce_image(image)
-        return self._predict_image(pil_image)
+        text = self._predict_image(pil_image)
+        if json_result:
+            return {"text": text}
+        return text
 
     def _document_to_json(self, doc: DocumentResult) -> Dict[str, Any]:
-        return {
-            "device": doc.device,
-            "timings": doc.timings or {},
-            "reading_order": doc.reading_order,
-            "lines": [
-                {
-                    "order": line.order,
-                    "block_index": line.block_index,
-                    "block_label": line.block_label,
-                    "text": line.text,
-                    "polygon": line.polygon,
-                    "bbox": line.bbox,
-                }
-                for line in doc.lines
-            ],
-            "tables": [
-                {
-                    "order": table.order,
-                    "polygon": table.polygon,
-                    "bbox": table.bbox,
-                    "cells": [
-                        {
-                            "row_id": cell.row_id,
-                            "col_id": cell.col_id,
-                            "text": cell.text,
-                            "is_header": cell.is_header,
-                            "polygon": cell.polygon,
-                            "bbox": cell.bbox,
-                        }
-                        for cell in table.cells
-                    ],
-                }
-                for table in doc.tables
-            ],
-            "layout_blocks": [
-                {
-                    "order": block.order,
-                    "label": block.label,
-                    "polygon": block.polygon,
-                    "bbox": block.bbox,
-                }
-                for block in doc.layout_blocks
-            ],
-            "detections": [
-                {
-                    "polygon": det.polygon,
-                    "bbox": det.bbox,
-                    "confidence": det.confidence,
-                }
-                for det in doc.detections
-            ],
-        }
+        return document_result_to_json(doc)
 
     def predict(self, image: Union[bytes, Image.Image, PathLike]) -> Union[DocumentResult, str, Dict[str, Any]]:
         """Run layout detection, reading order, tables, and line recognition via Surya."""
@@ -135,10 +88,13 @@ class Mer:
             return self._document_to_json(doc)
         return doc
 
-    def recognize_latex(self, image: Union[bytes, Image.Image, PathLike]) -> str:
+    def recognize_latex(self, image: Union[bytes, Image.Image, PathLike], json_result: bool = False) -> Union[str, Dict[str, str]]:
         """Run Surya's math mode recognizer on the provided image."""
         self._document_processor.load()
-        return self._document_processor.recognise_latex(image)
+        latex = self._document_processor.recognise_latex(image)
+        if json_result:
+            return {"latex": latex}
+        return latex
 
     def load(self, load_surya: bool = True) -> None:
         """
