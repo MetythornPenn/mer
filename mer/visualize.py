@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from typing import Tuple, Union
-
+import os
 from PIL import Image, ImageDraw
 
 from .types import DocumentResult

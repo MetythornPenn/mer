@@ -5,7 +5,7 @@ from io import BytesIO
 from pathlib import Path
 from threading import Lock
 from typing import Any, Callable, List, Sequence, Tuple, Union, TYPE_CHECKING
-import time
+import time, os
 
 import torch
 from PIL import Image
@@ -391,8 +391,15 @@ class SuryaDocumentProcessor:
     def _resolve_device(self) -> str:
         preferred = (str(self._device_preference) if self._device_preference is not None else "auto").lower()
         if preferred == "auto":
-            return "cuda" if torch.cuda.is_available() else "cpu"
+            if torch.cuda.is_available():
+                return "cuda"
+            elif torch.backends.mps.is_available():
+                return "mps"
+            else:
+                return "cpu"
         if preferred == "cuda" and not torch.cuda.is_available():
+            return "cpu"
+        if preferred == "mps" and not torch.backends.mps.is_available():
             return "cpu"
         return preferred
 
