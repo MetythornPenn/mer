@@ -11,12 +11,15 @@ PathLike = Union[str, "os.PathLike[str]"]  # noqa: F821
 class Vocabulary:
     """Simple character-level vocabulary helper."""
 
-    def __init__(self, data_file: PathLike):
+    def __init__(self, data: Union[dict, PathLike]):
         self.char2idx: dict[str, int] = {}
         self.idx2char: dict[int, str] = {}
         self.specials = ["<PAD>", "<SOS>", "<EOS>"]
         self.max_label_len = 0
-        self.build_vocab(str(data_file))
+        if isinstance(data, dict):
+            self._init_from_dict(data)
+        else:
+            self.build_vocab(str(data))
 
     def build_vocab(self, data_file: PathLike) -> None:
         chars = set()
@@ -35,6 +38,15 @@ class Vocabulary:
         all_tokens = self.specials + sorted(chars)
         self.char2idx = {char: idx for idx, char in enumerate(all_tokens)}
         self.idx2char = {idx: char for idx, char in enumerate(all_tokens)}
+
+    def _init_from_dict(self, data: dict) -> None:
+        self.specials = data.get("specials", ["<PAD>", "<SOS>", "<EOS>"])
+        self.char2idx = data["char2idx"]
+        idx2char_raw = data["idx2char"]
+        if isinstance(idx2char_raw, dict):
+            self.idx2char = {int(k): v for k, v in idx2char_raw.items()}
+        else:
+            self.idx2char = {int(idx): char for idx, char in enumerate(idx2char_raw)}
 
     def encode(self, text: str) -> List[int]:
         sos = self.char2idx["<SOS>"]
@@ -69,15 +81,7 @@ class Vocabulary:
 
     @classmethod
     def from_dict(cls, data: dict) -> "Vocabulary":
-        vocab = cls.__new__(cls)  # type: ignore
-        vocab.specials = data.get("specials", ["<PAD>", "<SOS>", "<EOS>"])
-        vocab.char2idx = data["char2idx"]
-        idx2char_raw = data["idx2char"]
-        if isinstance(idx2char_raw, dict):
-            vocab.idx2char = {int(k): v for k, v in idx2char_raw.items()}
-        else:
-            vocab.idx2char = {int(idx): char for idx, char in enumerate(idx2char_raw)}
-        return vocab
+        return cls(data)
 
 
 __all__ = ["Vocabulary"]

@@ -2,6 +2,7 @@
 
 Mer (មើល) is a lightweight bilingual (Khmer/English) OCR that pairs my own recognizer with Surya OCR for layout detection, tables, latex ocr, and reading order.
 Why not use Surya alone? Its built-in recognizer still struggles with the wide variety of Khmer fonts, so I wasn’t satisfied with the accuracy. I don’t have a public paper for this achitecture — everything comes from thousands of experiments across different model architectures and datasets.
+The recognizer now runs from an ONNX export hosted at `metythorn/ocr-stn-cnn-transformer-base` on Hugging Face, so you don’t need a PyTorch checkpoint to run inference.
 
 
 ## Installation
@@ -55,7 +56,8 @@ print(postprocess_text("ទៀតផង ។"))  # -> "ទៀតផង។"
 ```
 
 ### Configuration options
-- `device`: set to `"cpu"`, `"cuda"`, or a specific device string; default `"cuda"` with automatic CPU fallback if CUDA is unavailable.
+- `device`: set to `"cpu"`, `"cuda"`, or a specific device string; default `"cuda"` with automatic CPU fallback if CUDA is unavailable. This maps to ONNX Runtime providers (`CUDAExecutionProvider` + CPU fallback when available).
+- `providers`: optionally pass a list of ONNX Runtime providers if you want explicit control (otherwise detected automatically based on `device`/availability).
 - `model_path`: point to a directory containing the model weights/config to skip downloading from Hugging Face.
 - `markdown`: if `True`, `predict` returns a Markdown string instead of a structured result.
 - `postprocess`: if `False`, disables text post-processing (spacing, Khmer punctuation fixes) on recognizer output.
@@ -71,7 +73,7 @@ ocr = Mer(model_path="/path/to/local/model_dir", device="cpu")
 ocr.load()
 ```
 
-Place `khmer_ocr_latest.pth` and `config.json` (or your custom filenames) in that directory; downloads are only attempted when files are missing.
+Place `khmer_ocr.onnx` and `config.json` (or your custom filenames) in that directory; downloads are only attempted when files are missing.
 
 ### Return Markdown directly
 ```python

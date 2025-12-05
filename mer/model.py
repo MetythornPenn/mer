@@ -14,7 +14,6 @@ from .constants import MODEL_FILENAME, CONFIG_FILENAME, REPO_ID, DEFAULT_CACHE_D
 from .predictor import Predictor
 from .surya import SuryaDocumentProcessor
 from .vocab import Vocabulary
-from .transformer import KhmerOCRTransformer, PositionalEncoding
 
 __all__ = [
     "Mer",
@@ -33,6 +32,4 @@ __all__ = [
     "Predictor",
     "SuryaDocumentProcessor",
     "Vocabulary",
-    "KhmerOCRTransformer",
-    "PositionalEncoding",
 ]

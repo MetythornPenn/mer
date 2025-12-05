@@ -1,32 +1,38 @@
 from __future__ import annotations
 
-import json, os
+import json
+import os
 from pathlib import Path
-from typing import List, Optional, Sequence, Union
+from typing import List, Optional, Union
 
-import torch
+import numpy as np
+import onnxruntime as ort
 from PIL import Image
 from torchvision import transforms
 
-from .transformer import KhmerOCRTransformer
 from .vocab import Vocabulary
 
-PathLike = Union[str, "os.PathLike[str]"]  # noqa: F821
+PathLike = Union[str, os.PathLike]
 
 
-def _coerce_device(device: Optional[Union[str, torch.device]]) -> torch.device:
+def _providers_from_device(device: Optional[Union[str, os.PathLike]]) -> Optional[List[str]]:
+    """
+    Map a device hint to ONNX Runtime providers while keeping backwards compatibility
+    with the previous torch-style `device` argument.
+    """
     if device is None:
-        return torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    if isinstance(device, torch.device):
-        return device
-    if isinstance(device, str) and device.startswith("cuda") and not torch.cuda.is_available():
-        return torch.device("cpu")
-    return torch.device(device)
+        return None
+    if isinstance(device, str):
+        if device.startswith("cuda"):
+            return ["CUDAExecutionProvider", "CPUExecutionProvider"]
+        if device.lower() == "cpu":
+            return ["CPUExecutionProvider"]
+    return None
 
 
 class Predictor:
     """
-    Loads the trained checkpoint and performs greedy decoding for a single image (or batch).
+    ONNX Runtime inference for the Khmer OCR model.
     """
 
     def __init__(
@@ -34,8 +40,10 @@ class Predictor:
         model_path: PathLike,
         vocab_path: Optional[PathLike] = None,
         config_path: Optional[PathLike] = None,
-        device: Optional[Union[str, torch.device]] = None,
+        device: Optional[Union[str, os.PathLike]] = None,
         max_length: Optional[int] = None,
+        providers: Optional[List[str]] = None,
+        session: Optional[ort.InferenceSession] = None,
     ) -> None:
         self.model_path = Path(model_path).expanduser()
         self.vocab_path = Path(vocab_path).expanduser() if vocab_path else None
@@ -46,12 +54,18 @@ class Predictor:
 
         self.config_data = self._load_config()
         self.hparams = self._resolve_hparams()
-        self.device = _coerce_device(device or self.hparams.get("device"))
         resolved_max_len = max_length if max_length is not None else self.hparams.get("max_decode_len", 128)
         self.max_length = int(resolved_max_len)
         self.vocab = self._load_vocab()
         self.transform = self._build_transform()
-        self.model = self._load_model()
+
+        self.providers = self._resolve_providers(providers, device)
+        self.session = session or ort.InferenceSession(
+            str(self.model_path),
+            providers=self.providers or ort.get_available_providers(),
+        )
+        self.output_name = self._select_output_name()
+        self.image_input_name, self.tgt_input_name = self._select_input_names()
 
     def _load_config(self) -> dict:
         search_paths: List[Optional[Path]] = []
@@ -87,23 +101,11 @@ class Predictor:
         defaults = {
             "img_height": 128,
             "img_width": 320,
-            "d_model": 256,
-            "nhead": 4,
-            "num_layers": 3,
-            "backbone": "resnet18",
             "max_decode_len": 128,
-            "device": None,
-            "dim_feedforward": 2048,
-            "dropout": 0.1,
         }
         resolved = {k: candidates.get(k, v) for k, v in defaults.items()}
         resolved["img_height"] = int(resolved["img_height"])
         resolved["img_width"] = int(resolved["img_width"])
-        resolved["d_model"] = int(resolved["d_model"])
-        resolved["nhead"] = int(resolved["nhead"])
-        resolved["num_layers"] = int(resolved["num_layers"])
-        resolved["dim_feedforward"] = int(resolved["dim_feedforward"])
-        resolved["dropout"] = float(resolved["dropout"])
         resolved["max_decode_len"] = int(resolved["max_decode_len"])
         return resolved
 
@@ -116,26 +118,31 @@ class Predictor:
             ]
         )
 
-    def _load_model(self) -> KhmerOCRTransformer:
-        model = KhmerOCRTransformer(
-            vocab_size=len(self.vocab),
-            d_model=self.hparams["d_model"],
-            nhead=self.hparams["nhead"],
-            num_layers=self.hparams["num_layers"],
-            backbone_name=self.hparams["backbone"],
-            dim_feedforward=self.hparams["dim_feedforward"],
-            dropout=self.hparams["dropout"],
-        ).to(self.device)
+    def _resolve_providers(self, providers: Optional[List[str]], device: Optional[Union[str, os.PathLike]]) -> Optional[List[str]]:
+        if providers:
+            return providers
+        hinted = _providers_from_device(device)
+        if not hinted:
+            return None
+        available = set(ort.get_available_providers())
+        usable = [p for p in hinted if p in available]
+        return usable or None
 
-        checkpoint = torch.load(self.model_path, map_location=self.device)
-        state_dict = checkpoint.get("model_state_dict") if isinstance(checkpoint, dict) else checkpoint
-        if state_dict is None:
-            raise ValueError(f"Unexpected checkpoint format at {self.model_path}")
-        model.load_state_dict(state_dict)
-        model.eval()
-        return model
+    def _select_output_name(self) -> str:
+        outputs = self.session.get_outputs()
+        for candidate in outputs:
+            if candidate.name == "logits":
+                return candidate.name
+        return outputs[0].name
 
-    def _prepare_image(self, image: Union[PathLike, Image.Image]) -> torch.Tensor:
+    def _select_input_names(self) -> tuple[str, str]:
+        inputs = self.session.get_inputs()
+        names = [inp.name for inp in inputs]
+        img_name = "images" if "images" in names else names[0]
+        tgt_name = "tgt" if "tgt" in names else (names[1] if len(names) > 1 else names[0])
+        return img_name, tgt_name
+
+    def _prepare_image(self, image: Union[PathLike, Image.Image]) -> np.ndarray:
         if isinstance(image, Image.Image):
             pil_image = image.convert("RGB")
         else:
@@ -143,19 +150,29 @@ class Predictor:
             if not image_path.exists():
                 raise FileNotFoundError(f"Image not found: {image_path}")
             pil_image = Image.open(image_path).convert("RGB")
-        tensor = self.transform(pil_image).unsqueeze(0).to(self.device)
-        return tensor
+        tensor = self.transform(pil_image)  # (C, H, W)
+        return tensor.unsqueeze(0).cpu().numpy().astype(np.float32)  # (1, C, H, W)
 
-    def _greedy_decode(self, image_tensor: torch.Tensor) -> List[int]:
+    def _greedy_decode(self, image_array: np.ndarray) -> List[int]:
         sos_idx = self.vocab.char2idx["<SOS>"]
         eos_idx = self.vocab.char2idx["<EOS>"]
+        pad_idx = self.vocab.char2idx["<PAD>"]
         generated = [sos_idx]
+        max_len = self.max_length
 
-        for _ in range(self.max_length):
-            tgt_tensor = torch.tensor([generated], dtype=torch.long, device=self.device)
-            with torch.no_grad():
-                output = self.model(image_tensor, tgt_tensor)
-            next_token = int(output[0, -1, :].argmax(dim=-1).item())
+        for _ in range(max_len - 1):  # leave room for EOS
+            tgt = np.full((1, max_len), pad_idx, dtype=np.int64)
+            tgt[0, : len(generated)] = generated
+            outputs = self.session.run(
+                [self.output_name],
+                {
+                    self.image_input_name: image_array,
+                    self.tgt_input_name: tgt,
+                },
+            )
+            logits = outputs[0]  # (1, seq, vocab)
+            next_pos = len(generated) - 1
+            next_token = int(logits[0, next_pos, :].argmax(axis=-1))
             if next_token == eos_idx:
                 break
             generated.append(next_token)
@@ -163,9 +180,9 @@ class Predictor:
         return generated
 
     def predict(self, image: Union[PathLike, Image.Image]) -> str:
-        image_tensor = self._prepare_image(image)
-        tokens = self._greedy_decode(image_tensor)
+        image_array = self._prepare_image(image)
+        tokens = self._greedy_decode(image_array)
         return self.vocab.decode(tokens)
 
 
-__all__ = ["Predictor", "_coerce_device", "PathLike"]
+__all__ = ["Predictor", "PathLike"]

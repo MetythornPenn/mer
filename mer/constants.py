@@ -1,9 +1,9 @@
 from pathlib import Path
 
-REPO_ID = "metythorn/ocr-cnn-transformer-base"
-MODEL_FILENAME = "khmer_ocr_latest.pth"
+REPO_ID = "metythorn/ocr-stn-cnn-transformer-base"
+MODEL_FILENAME = "khmer_ocr.onnx"
 CONFIG_FILENAME = "config.json"
-DEFAULT_CACHE_DIR = Path.home() / ".mer" / "ocr-cnn-transformer-base"
+DEFAULT_CACHE_DIR = Path.home() / ".mer" / "ocr-stn-cnn-transformer-base"
 
 __all__ = [
     "REPO_ID",

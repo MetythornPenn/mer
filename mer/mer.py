@@ -35,6 +35,7 @@ class Mer:
         device: Optional[Union[str, torch.device]] = "cuda",
         max_length: Optional[int] = None,
         model_path: Optional[PathLike] = None,
+        providers: Optional[list[str]] = None,
         markdown: bool = False,
         postprocess: bool = True,
         json_result: bool = True,
@@ -54,6 +55,7 @@ class Mer:
             config_path=str(artifacts.config),
             device=device,
             max_length=max_length,
+            providers=providers,
         )
         self._document_processor = SuryaDocumentProcessor(
             line_predict_fn=self._predict_image,

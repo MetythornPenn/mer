@@ -37,6 +37,11 @@ def _write_dummy_config(path: Path) -> None:
     path.write_text(json.dumps(config), encoding="utf-8")
 
 
+def _stub_predictor(monkeypatch, return_value: str = "dummy-text") -> None:
+    monkeypatch.setattr(predictor_module.Predictor, "__init__", lambda self, *args, **kwargs: None)
+    monkeypatch.setattr(predictor_module.Predictor, "predict", lambda self, image: return_value)
+
+
 def test_ensure_artifacts_uses_existing_files(tmp_path, monkeypatch):
     weights = tmp_path / MODEL_FILENAME
     cfg = tmp_path / CONFIG_FILENAME
@@ -104,8 +109,7 @@ def test_mer_recognize_line_uses_predictor(tmp_path, monkeypatch):
     weights.write_text("weights", encoding="utf-8")
     _write_dummy_config(cfg)
 
-    monkeypatch.setattr(predictor_module.Predictor, "_load_model", lambda self: object())
-    monkeypatch.setattr(predictor_module.Predictor, "predict", lambda self, image: "dummy-text")
+    _stub_predictor(monkeypatch, return_value="dummy-text")
 
     sample_img = tmp_path / "line.png"
     Image.new("RGB", (10, 10), color="white").save(sample_img)
@@ -121,8 +125,7 @@ def test_mer_postprocess_flag(tmp_path, monkeypatch):
     _write_dummy_config(cfg)
 
     raw_text = "raw\ttext"
-    monkeypatch.setattr(predictor_module.Predictor, "_load_model", lambda self: object())
-    monkeypatch.setattr(predictor_module.Predictor, "predict", lambda self, image: raw_text)
+    _stub_predictor(monkeypatch, return_value=raw_text)
 
     sample_img = tmp_path / "line.png"
     Image.new("RGB", (10, 10), color="white").save(sample_img)
@@ -137,8 +140,7 @@ def test_mer_recognize_line_json_result(tmp_path, monkeypatch):
     weights.write_text("weights", encoding="utf-8")
     _write_dummy_config(cfg)
 
-    monkeypatch.setattr(predictor_module.Predictor, "_load_model", lambda self: object())
-    monkeypatch.setattr(predictor_module.Predictor, "predict", lambda self, image: "dummy-json-text")
+    _stub_predictor(monkeypatch, return_value="dummy-json-text")
 
     sample_img = tmp_path / "line.png"
     Image.new("RGB", (10, 10), color="white").save(sample_img)
@@ -235,7 +237,7 @@ def test_recognize_latex_json_result(tmp_path, monkeypatch):
     weights.write_text("weights", encoding="utf-8")
     _write_dummy_config(cfg)
 
-    monkeypatch.setattr(predictor_module.Predictor, "_load_model", lambda self: object())
+    _stub_predictor(monkeypatch)
 
     ocr = Mer(cache_dir=tmp_path, model_path=tmp_path)
     monkeypatch.setattr(ocr._document_processor, "load", lambda: None)
@@ -340,7 +342,7 @@ def test_analyze_document_markdown_flag(tmp_path, monkeypatch):
     weights.write_text("weights", encoding="utf-8")
     _write_dummy_config(cfg)
 
-    monkeypatch.setattr(predictor_module.Predictor, "_load_model", lambda self: object())
+    _stub_predictor(monkeypatch)
 
     ocr = Mer(cache_dir=tmp_path, model_path=tmp_path, markdown=True)
     monkeypatch.setattr(ocr._document_processor, "load", lambda: None)
@@ -356,7 +358,7 @@ def test_analyze_document_json_flag(tmp_path, monkeypatch):
     weights.write_text("weights", encoding="utf-8")
     _write_dummy_config(cfg)
 
-    monkeypatch.setattr(predictor_module.Predictor, "_load_model", lambda self: object())
+    _stub_predictor(monkeypatch)
 
     ocr = Mer(cache_dir=tmp_path, model_path=tmp_path, json_result=True)
     monkeypatch.setattr(ocr._document_processor, "load", lambda: None)
@@ -385,7 +387,7 @@ def test_predict_returns_json_by_default(tmp_path, monkeypatch):
     weights.write_text("weights", encoding="utf-8")
     _write_dummy_config(cfg)
 
-    monkeypatch.setattr(predictor_module.Predictor, "_load_model", lambda self: object())
+    _stub_predictor(monkeypatch)
 
     ocr = Mer(cache_dir=tmp_path, model_path=tmp_path)
     monkeypatch.setattr(ocr._document_processor, "load", lambda: None)

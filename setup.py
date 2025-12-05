@@ -8,6 +8,7 @@ def read(*paths):
 requirements = [
     'torch',
     'torchvision',
+    'onnxruntime-gpu',
     'surya-ocr',
     'pillow',
     'huggingface-hub',
@@ -16,7 +17,7 @@ requirements = [
 
 setup(
     name='mer',
-    version='1.1.3',
+    version='1.2.0',
     packages=['mer'],
     url='https://github.com/MetythornPenn/mer.git',
     license='Apache Software License 2.0',
