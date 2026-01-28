@@ -9,7 +9,6 @@ requirements = [
     'torch',
     'torchvision',
     'onnxruntime-gpu',
-    'surya-ocr',
     'pillow',
     'huggingface-hub',
     'tqdm',
@@ -17,7 +16,7 @@ requirements = [
 
 setup(
     name='mer',
-    version='1.2.0',
+    version='1.2.1',
     packages=['mer'],
     url='https://github.com/MetythornPenn/mer.git',
     license='Apache Software License 2.0',
